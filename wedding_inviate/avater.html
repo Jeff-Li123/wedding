@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>定制你的形象 🎨</title>
+  <style>
+    body {
+      background-color: #0f0f0f;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 30px;
+    }
+    .avatar-preview {
+      margin: 20px auto;
+      background: white;
+      border-radius: 50%;
+      width: 200px;
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: transform 1s;
+    }
+    .rotate {
+      transform: rotateY(360deg);
+    }
+    select, button {
+      margin: 8px;
+      padding: 8px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    button {
+      background-color: #00c3ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #009ec3;
+    }
+  </style>
+</head>
+<body>
+  <h1>定制你的虚拟形象 🎨</h1>
+
+  <div class="avatar-preview" id="avatarPreview"></div>
+
+  <div>
+    <label>性别：</label>
+    <select id="gender">
+      <option value="male">男</option>
+      <option value="female">女</option>
+    </select>
+
+    <label>发型：</label>
+    <select id="hair">
+      <option value="shortHair">短发</option>
+      <option value="longHair">长发</option>
+      <option value="hat">帽子</option>
+    </select>
+
+    <label>胡子：</label>
+    <select id="beard">
+      <option value="none">无</option>
+      <option value="mediumBeard">中等</option>
+      <option value="majesticBeard">浓密</option>
+    </select>
+
+    <label>衣服颜色：</label>
+    <select id="color">
+      <option value="blue">蓝色</option>
+      <option value="red">红色</option>
+      <option value="green">绿色</option>
+    </select>
+
+    <label>背景颜色：</label>
+    <select id="bgColor">
+      <option value="transparent">透明</option>
+      <option value="ff0000">红色</option>
+      <option value="00ff00">绿色</option>
+      <option value="0000ff">蓝色</option>
+    </select>
+
+    <div>
+      <button onclick="updateAvatar()">预览形象</button>
+      <button onclick="randomAvatar()">随机生成</button>
+      <button onclick="saveAvatar()">保存形象</button>
+    </div>
+  </div>
+
+  <script>
+    let userId = '';
+    let currentAvatarUrl = '';
+
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    function generateSeed() {
+      return Math.random().toString(36).substring(7);
+    }
+
+    function updateAvatar(seed = null) {
+      const gender = document.getElementById('gender').value;
+      const hair = document.getElementById('hair').value;
+      const beard = document.getElementById('beard').value;
+      const color = document.getElementById('color').value;
+      const bgColor = document.getElementById('bgColor').value;
+
+      const finalSeed = seed || userId || generateSeed();
+
+      const url = `https://api.dicebear.com/7.x/adventurer/svg?seed=${finalSeed}&gender=${gender}&hair=${hair}&facialHair=${beard}&hairColor=${color}&backgroundColor=${bgColor}`;
+      currentAvatarUrl = url;
+
+      const avatar = document.getElementById('avatarPreview');
+      avatar.style.backgroundImage = `url('${url}')`;
+
+      // 触发旋转效果
+      avatar.classList.remove('rotate');
+      void avatar.offsetWidth; // 触发重绘
+      avatar.classList.add('rotate');
+    }
+
+    function saveAvatar() {
+      if (!userId) {
+        alert('未能识别用户 ID，请从 NFC 卡入口进入。');
+        return;
+      }
+      localStorage.setItem(`avatar_${userId}`, currentAvatarUrl);
+      alert('头像保存成功！🎉');
+    }
+
+    function randomAvatar() {
+      const randomSeed = generateSeed();
+      updateAvatar(randomSeed);
+    }
+
+    // 初始化
+    window.onload = function() {
+      userId = getQueryParam('user');
+      if (!userId) {
+        alert('未能识别用户 ID，请从 NFC 卡入口进入。');
+      }
+      updateAvatar();
+    };
+  </script>
+</body>
+</html>
